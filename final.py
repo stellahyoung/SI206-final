@@ -61,21 +61,20 @@ def grammy_web():
 def create_grammy_table(cur, conn):
     cur.execute("CREATE TABLE IF NOT EXISTS Grammy (artist TEXT UNIQUE, awards NUMBER)")
 
-# Compile Bitcoin API data into database
+# Compile Grammy website data into database
 def add_into_grammy_table(cur, conn, add):
     data = grammy_web()
-    starting = 0 + add
-    limit = 25 + add
     data_lst = []
-    for i in data[starting:limit]:
-        date = i['time_open'][:10]
-        start = float(i['open'])
-        high = float(i['high'])
-        low = float(i['low'])
-        close = float(i['close'])
-        data_lst.append((date, start, high, low, close))
+    award_num = 0
+    for i in data:
+        artist = i['winner']
+        awards = i['album of the year']
+        for artist in awards:
+            artist.award_num += 1
+            data_lst.append(artist, award_num)
+
         for tup in data_lst:
-            cur.execute('INSERT OR IGNORE INTO Bitcoin (date, bitcoin_open, bitcoin_high, bitcoin_low, bitcoin_close) VALUES (?,?,?,?,?)', (tup[0], tup[1], tup[2], tup[3], tup[4]))
+            cur.execute('INSERT OR IGNORE INTO Grammy (artist, awards) VALUES (?,?)', (tup[0], tup[1]))
          
         conn.commit()
 
