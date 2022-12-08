@@ -8,9 +8,10 @@ import scipy.stats
 import statistics
 import math
 import matplotlib.pyplot as plt 
+from bs4 import BeautifulSoup
 
-# Team Name: Machos
-# Group Members: Shin Cho and Rebecca Mao
+# Team Name: Elizabeth + Stella 
+# Group Members: Elizabeth Kim and Stella Young 
 
 # Create database
 def setUpDatabase(db_name):
@@ -50,33 +51,32 @@ def add_into_stock_table(cur, conn, add):
 
 # Get Grammy data in json
 def grammy_web():
-    base_url = "https://www.grammy.com/awards"
+    web_data = {}
     
-    response = requests.get(base_url)
-    data = response.json()
+    url = "https://en.wikipedia.org/wiki/List_of_American_Grammy_Award_winners_and_nominees"
+    resp = requests.get(url)
+    soup = BeautifulSoup(resp.content, 'html.parser')
+    result = soup.find('table')
+    row = result.find_all('tr')
+    for i in range(1, len(row)):
+        for data in row[i].find('td'):
+            print(data.text)
+            print(row[i].select("td")[1])
+            web_data[str(data)] = row[i].select("td")[1].text
 
-    return data
+    return web_data
 
 # Create Grammy table
-def create_grammy_table(cur, conn):
-    cur.execute("CREATE TABLE IF NOT EXISTS Grammy (artist TEXT UNIQUE, awards NUMBER)")
+def create_grammy_table(data, cur, conn):
+    data_key = list(data.keys())
+    print(data_key)
+    print(data)
 
-# Compile Grammy website data into database
-def add_into_grammy_table(cur, conn, add):
-    data = grammy_web()
-    data_lst = []
-    award_num = 0
-    for i in data:
-        artist = i['winner']
-        awards = i['album of the year']
-        for artist in awards:
-            artist.award_num += 1
-            data_lst.append(artist, award_num)
+    cur.execute("CREATE TABLE Grammy (Artist TEXT PRIMARY KEY, Award_Num INT)")
+    for i in data_key:
+        cur.execute("INSERT INTO Grammy (Artist, Award_Num) VALUES (?,?)",(i,data[i]))
+    conn.commit()
 
-        for tup in data_lst:
-            cur.execute('INSERT OR IGNORE INTO Grammy (artist, awards) VALUES (?,?)', (tup[0], tup[1]))
-         
-        conn.commit()
 
 # Join DJI Stock data and Bitcoin data
 def join_tables(cur,conn):
