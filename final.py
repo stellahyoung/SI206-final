@@ -48,25 +48,22 @@ def add_into_stock_table(cur, conn, add):
 
         conn.commit()
 
-# Get Bitcoin API data in json
-def bitcoin_api():
-    base_url = "https://api.coinpaprika.com/v1/"
-    start_date = "2021-01-01"
-    end_date = "2021-12-31"
+# Get Grammy data in json
+def grammy_web():
+    base_url = "https://www.grammy.com/awards"
     
-    response = requests.get(base_url + "coins/btc-bitcoin/ohlcv/historical?start=" + start_date + "&end=" + end_date)
+    response = requests.get(base_url)
     data = response.json()
 
     return data
 
-# Create Bitcoin table
-def create_bitcoin_table(cur, conn):
-    cur.execute("CREATE TABLE IF NOT EXISTS Bitcoin (date TEXT UNIQUE, bitcoin_open NUMBER, bitcoin_high NUMBER, bitcoin_low NUMBER, bitcoin_close NUMBER)")
-    conn.commit()
+# Create Grammy table
+def create_grammy_table(cur, conn):
+    cur.execute("CREATE TABLE IF NOT EXISTS Grammy (artist TEXT UNIQUE, awards NUMBER)")
 
 # Compile Bitcoin API data into database
-def add_into_bitcoin_table(cur, conn, add):
-    data = bitcoin_api()
+def add_into_grammy_table(cur, conn, add):
+    data = grammy_web()
     starting = 0 + add
     limit = 25 + add
     data_lst = []
