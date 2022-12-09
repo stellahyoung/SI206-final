@@ -85,3 +85,37 @@ def spotify_api(artists_info):
 spotify_api({'06HL4z0CvFAxyc27GXpf02': 'BQBZWbhyAYpXwcCXnFjc8o3fg_zNcuLpQ4W9Dkkc2qHJqt2ht1Yuaipcd9wiZ8J4YIIm_xXYy_WpQ1bwnf5if9t2QNHrgdRITeF3JlIbkjKYP4HemYK5a5CSJCORmeQNNtaP23Yu3DhSa9Cj4k_H3qHQtH5eZvOy4VTZosqczr_rcHRxQgXzBBS71QVLqjH9zRHioWc', 
 '66CXWjxzNUsdJxJ2JdwvnR':'BQAlSp6WZ9HeZk7AfxbuqX45kFNtOlDi35Pug_fN9jPMJbrR2E1Evr39jTI2MwczpBHBX-xISIJpitTqL09QpIz1PoleiYQyDJz6qgTdLh6JzEQSCtJmyHU-AsCtfHIMAYhXvD1wOquh7ne2IelCHUHlg99YklzhSiA4cVVFBfwKXv1mvN4xiSjsvcP1m3YPmyvh1cQ'}
 )
+
+#creating spotify table
+def create_spotify_table(cur, conn):
+    cur.execute("CREATE TABLE IF NOT EXISTS Spotify (name TEXT UNIQUE, popularity NUMBER)")
+    conn.commit()
+
+
+#adding spotify data into database
+def add_into_spotify_table(cur, conn):
+    data = spotify_api()
+    data_lst = []
+    for i in data:
+        name = data['name']
+        popularity = data['popularity']
+        data_lst.append((name, popularity))
+        for tup in data_lst:
+            cur.execute('INSERT OR IGNORE INTO Spotify (name, popularity) VALUES (?,?)', (tup[0], tup[1]))
+         
+        conn.commit()
+
+
+#join tables
+def join_tables(cur,conn):
+    cur.execute("SELECT Concert.Concerts, Spotify.popularity FROM Spotify JOIN Concert ON Spotify.name = Concert.Artist")
+    results = cur.fetchall()
+    conn.commit()
+    return results
+
+
+
+
+
+
+
