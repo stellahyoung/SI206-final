@@ -54,7 +54,7 @@ def concert_web():
             new_data = data.strip()
             numbers = new_data.split(' ')
             web_data[artist.strip()] = str(numbers[0])
-            print(web_data)
+            #print(web_data)
 
 
     return web_data
@@ -144,12 +144,32 @@ def add_into_spotify_table(cur, conn):
     conn.commit()
 
 
+#creating follower table
+def create_spotify_followers_table(cur, conn):
+    cur.execute("CREATE TABLE IF NOT EXISTS Spotify_Followers (name TEXT UNIQUE, followers NUMBER) ")
+    conn.commit()
+
+#adding follower data into database
+def insert_follower_data_table(cur, conn):
+    data = spotify_api()
+    lst = []
+    for item in data:
+        name = item[0]
+        followers = item[1]
+        lst.append((name, followers))
+        for tup in lst:
+            cur.execute('INSERT OR IGNORE INTO Spotify_Followers (name, followers) VALUES (?,?)', (tup[0], tup[1]))
+        conn.commit()
+
+
 #join tables
 def join_tables(cur,conn):
     cur.execute("SELECT Concert.Concerts, Spotify.popularity FROM Spotify JOIN Concert ON Spotify.name = Concert.Artist")
     results = cur.fetchall()
     conn.commit()
+    
     return results
+    
 
 
 
@@ -211,6 +231,7 @@ def write_correlation_calc(filename, correlation):
         fileout.write("======================================================\n\n")
         fileout.write(f"The correlation coefficient between number of concerts and popularity was r = {correlation}.\n")
         fileout.close()
+        
 
 
 def create_regression_line(list_of_tuple):
@@ -229,10 +250,10 @@ def create_regression_line(list_of_tuple):
     line = f'Regression line: y={intercept:.2f}+{slope:.2f}x, r={r:.2f}'
 
     fig, ax = plt.subplots()
-    plt.title('Artist vs # of Upcoming Concerts in 2023')
+    plt.title('Artist Popularity vs # of Upcoming Concerts in 2023')
     ax.plot(x, y, linewidth=0, marker='s', label='Data points')
     ax.plot(x, intercept + slope * x, label=line)
-    ax.set_xlabel('Artist Name')
+    ax.set_xlabel('Artist Popularity')
     ax.set_ylabel('# of Concerts')
     ax.legend(facecolor='white')
     plt.show()
@@ -279,6 +300,28 @@ def main():
         add_into_spotify_table(cur, conn)
     elif 125 <= length < 150:
         add_into_spotify_table(cur, conn)
+
+
+
+    create_spotify_followers_table(cur, conn)
+    cur.execute('SELECT COUNT(*) FROM Spotify_Followers')
+    conn.commit()
+    info = cur.fetchall()
+    length = info[0][0]
+
+    if length < 25:
+        insert_follower_data_table(cur, conn)
+    elif 25 <= length < 50:
+        insert_follower_data_table(cur, conn)
+    elif 50 <= length < 75:
+        insert_follower_data_table(cur, conn)
+    elif 75 <= length < 100:
+        insert_follower_data_table(cur, conn)
+    elif 100 <= length < 125:
+        insert_follower_data_table(cur, conn)
+    elif 125 <= length < 150:
+        insert_follower_data_table(cur, conn)
+
 
 
 
