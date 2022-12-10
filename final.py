@@ -61,13 +61,21 @@ def concert_web():
 
 # Create Concerts table
 def create_concert_table(cur, conn):
-    dic = concert_web()
-    data_key = list(dic.keys())
+    #dic = concert_web()
+    #ata_key = list(dic.keys())
     #print(data_key)
     #print(concert_web)
 
     cur.execute("CREATE TABLE Concert (Artist TEXT PRIMARY KEY, Concerts INT)")
-    for i in data_key:
+    conn.commit()
+
+def add_into_concert_table(cur,conn, add): 
+    dic = concert_web()
+    data_key = list(dic.keys())
+    starting = 0 + add
+    limit = 25 + add
+    
+    for i in data_key[starting:limit]:
         cur.execute("INSERT INTO Concert (Artist, Concerts) VALUES (?,?)",(i, dic[i]))
         
     conn.commit()
@@ -131,10 +139,12 @@ def create_spotify_table(cur, conn):
 
 
 #adding spotify data into database
-def add_into_spotify_table(cur, conn):
+def add_into_spotify_table(cur, conn, add):
     data = spotify_api()
     data_lst = []
-    for item in data:
+    starting = 0 + add
+    limit = 25 + add
+    for item in data[starting:limit]:
         name = item[0]
         popularity = str(item[-1])
         data_lst.append((name, popularity))
@@ -150,10 +160,12 @@ def create_spotify_followers_table(cur, conn):
     conn.commit()
 
 #adding follower data into database
-def insert_follower_data_table(cur, conn):
+def insert_follower_data_table(cur, conn, add):
     data = spotify_api()
     lst = []
-    for item in data:
+    starting = 0 + add
+    limit = 25 + add
+    for item in data[starting:limit]:
         name = item[0]
         followers = item[1]
         lst.append((name, followers))
@@ -257,6 +269,34 @@ def create_regression_line(list_of_tuple):
     ax.set_ylabel('# of Concerts')
     ax.legend(facecolor='white')
     plt.show()
+  
+def create_histogram(list_of_tuples):
+    artist_lst = []
+    concert_lst = []
+
+    for artist, concerts in list_of_tuples:
+        artist_lst.append(artist)
+        concert_lst.append(concerts)
+    
+    xy = np.array([artist_lst, concert_lst])
+    corr_matrix = np.corrcoef(xy).round(decimals=2)
+
+    fig, ax = plt.subplots()
+    im = ax.imshow(corr_matrix)
+    im.set_clim(-1, 1)
+    ax.grid(False)
+    ax.xaxis.set(ticks=(0, 1), ticklabels=('Bitcoin Price', 'DJI Stock Price'))
+    ax.yaxis.set(ticks=(0, 1), ticklabels=('Bitcoin Price', 'DJI Stock Price'))
+    ax.set_ylim(1.5, -0.5)
+    for i in range(2):
+        for j in range(2):
+            ax.text(j, i, corr_matrix[i, j], ha='center', va='center', color='r')
+    cbar = ax.figure.colorbar(im, ax=ax, format='% .2f')
+    plt.show()
+
+ # unpack a list of pairs into two tuples
+    
+
 
 
 
@@ -269,17 +309,17 @@ def main():
     length = info[0][0]
 
     if length < 25:
-        create_concert_table(cur, conn, 0)
+        add_into_concert_table(cur, conn, 0)
     elif 25 <= length < 50:
-        create_concert_table(cur, conn, 25)
+        add_into_concert_table(cur, conn, 25)
     elif 50 <= length < 75:
-        create_concert_table(cur, conn, 50)
+        add_into_concert_table(cur, conn, 50)
     elif 75 <= length < 100:
-        create_concert_table(cur, conn, 75)
+        add_into_concert_table(cur, conn, 75)
     elif 100 <= length < 125:
-        create_concert_table(cur, conn, 100)
+        add_into_concert_table(cur, conn, 100)
     elif 125 <= length < 150:
-        create_concert_table(cur, conn, 125)
+        add_into_concert_table(cur, conn, 125)
     
 
     create_spotify_table(cur, conn)
@@ -289,17 +329,17 @@ def main():
     length = info[0][0]
 
     if length < 25:
-        add_into_spotify_table(cur, conn)
+        add_into_spotify_table(cur, conn, 0)
     elif 25 <= length < 50:
-        add_into_spotify_table(cur, conn)
+        add_into_spotify_table(cur, conn, 25)
     elif 50 <= length < 75:
-        add_into_spotify_table(cur, conn)
+        add_into_spotify_table(cur, conn, 50)
     elif 75 <= length < 100:
-        add_into_spotify_table(cur, conn)
+        add_into_spotify_table(cur, conn, 75)
     elif 100 <= length < 125:
-        add_into_spotify_table(cur, conn)
+        add_into_spotify_table(cur, conn, 100)
     elif 125 <= length < 150:
-        add_into_spotify_table(cur, conn)
+        add_into_spotify_table(cur, conn, 125)
 
 
 
@@ -310,17 +350,17 @@ def main():
     length = info[0][0]
 
     if length < 25:
-        insert_follower_data_table(cur, conn)
+        insert_follower_data_table(cur, conn, 0)
     elif 25 <= length < 50:
-        insert_follower_data_table(cur, conn)
+        insert_follower_data_table(cur, conn, 25)
     elif 50 <= length < 75:
-        insert_follower_data_table(cur, conn)
+        insert_follower_data_table(cur, conn, 50)
     elif 75 <= length < 100:
-        insert_follower_data_table(cur, conn)
+        insert_follower_data_table(cur, conn, 75)
     elif 100 <= length < 125:
-        insert_follower_data_table(cur, conn)
+        insert_follower_data_table(cur, conn, 100)
     elif 125 <= length < 150:
-        insert_follower_data_table(cur, conn)
+        insert_follower_data_table(cur, conn, 125)
 
 
 
@@ -329,6 +369,7 @@ def main():
     calculations = correlation_calc(set_up_calculations)
     write_correlation_calc("calculations.txt", calculations)
     create_regression_line(set_up_calculations)
+    create_histogram(set_up_calculations)
 
 
 
